@@ -8,7 +8,11 @@ API để kiểm tra độc tính trong văn bản tiếng Việt sử dụng m�
 - **API chuẩn RESTful**: Endpoints đơn giản và dễ sử dụng  
 - **JSON Response**: Định dạng phản hồi thống nhất với `status_code`, `error`, `data`
 - **FastAPI**: Performance cao với tự động tạo docs
-- **Health Check**: Endpoint để kiểm tra trạng thái server
+- **Lazy Loading**: Model chỉ load khi cần, tối ưu memory
+- **Model Caching**: Cache model trong memory sau lần load đầu
+- **Health Check**: Endpoint để kiểm tra trạng thái server và model
+- **Error Handling**: Xử lý lỗi chi tiết và logging đầy đủ
+- **Input Validation**: Kiểm tra và làm sạch input text
 
 ## 🚀 Cài đặt
 
@@ -60,14 +64,19 @@ Server sẽ chạy tại: `http://localhost:8000`
     "data": {
         "input_text": "Văn bản cần kiểm tra",
         "toxicity_result": "CLEAN hoặc TOXIC",
-        "processed": true
+        "processed": true,
+        "model": "ViHateT5-base-HSD"
     }
 }
 ```
 
 #### 3. Health Check
 - **URL**: `GET /health`
-- **Mô tả**: Kiểm tra trạng thái server
+- **Mô tả**: Kiểm tra trạng thái server và model
+
+#### 4. Model Info
+- **URL**: `GET /model-info`
+- **Mô tả**: Thông tin chi tiết về model đang sử dụng
 
 ### Response Format
 

@@ -14,10 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Create .env file
-      - name: Create .env file
-        run: |
-          echo "${{ secrets.ENV_FILE }}" | base64 --decode > .env
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
