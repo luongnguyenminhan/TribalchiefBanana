@@ -1,16 +1,14 @@
-# Multi-stage build với Alpine Linux
-FROM python:3.11-alpine AS builder
+# Multi-stage build với Debian slim 
+FROM python:3.11-slim AS builder
 
 # Copy uv binary from official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Install system dependencies cần thiết cho Alpine
-RUN apk add --no-cache \
-    build-base \
-    libffi-dev \
-    openssl-dev \
+# Install system dependencies cần thiết
+RUN apt-get update && apt-get install -y \
+    build-essential \
     git \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Cấu hình uv environment variables
 ENV UV_SYSTEM_PYTHON=1 \
@@ -24,33 +22,28 @@ WORKDIR /app
 # Copy requirements và cài đặt dependencies trước (cho Docker layer cache)
 COPY requirements.txt .
 
-# Install dependencies với cache mount
+# Install dependencies với cache mount (CPU-only PyTorch)
 RUN --mount=type=cache,target=/opt/uv-cache \
-    uv pip install --system -r requirements.txt
-
-# Copy model download script và download model
-COPY download_model.py .
-RUN --mount=type=cache,target=/opt/uv-cache \
-    --mount=type=cache,target=/root/.cache/huggingface \
-    python download_model.py
+    uv pip install --system torch>=2.0.0 --index-url https://download.pytorch.org/whl/cpu && \
+    uv pip install --system transformers>=4.28 fastapi>=0.95.1 uvicorn[standard]>=0.20.0 pydantic>=1.10.0 requests>=2.28.0
 
 # Copy application code
 COPY . .
 
-# Production stage với Alpine slim
-FROM python:3.11-alpine AS production
+# Production stage với Debian slim
+FROM python:3.11-slim AS production
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    libffi \
-    && rm -rf /var/cache/apk/*
+# Install runtime dependencies  
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy uv binary
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Tạo non-root user
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
+# Tạo non-root user (Debian syntax)
+RUN groupadd -g 1001 appgroup && \
+    useradd -u 1001 -g appgroup -m appuser
 
 # Set working directory
 WORKDIR /app
@@ -59,8 +52,9 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
-# Copy HuggingFace model cache
-COPY --from=builder --chown=appuser:appgroup /root/.cache/huggingface /home/appuser/.cache/huggingface
+# Create cache directory for runtime model download
+RUN mkdir -p /home/appuser/.cache/huggingface && \
+    chown -R appuser:appgroup /home/appuser/.cache
 
 # Copy application code
 COPY --chown=appuser:appgroup . .
