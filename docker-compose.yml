@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Production service
+  vihatet5-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service với bind mount
+  vihatet5-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8001:8000"
+    volumes:
+      # Bind mount code cho development
+      - ./main.py:/app/main.py
+      - ./runner.py:/app/runner.py
+      # Exclude model cache
+      - /app/.cache
+    environment:
+      - PYTHONUNBUFFERED=1
+      - UV_SYSTEM_PYTHON=1
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  default:
+    name: vihatet5-network 

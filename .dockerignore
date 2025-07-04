@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile.*
+docker-compose*
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation
+*.md
+docs/
+
+# Test files
+test/
+tests/
+*_test.py
+test_*.py
+
+# Local development
+.env
+.env.local
+
+# HuggingFace cache (sẽ được download trong container)
+.cache/huggingface/
+
+# Node modules (nếu có)
+node_modules/ 
